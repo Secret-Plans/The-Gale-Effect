@@ -36,6 +36,8 @@ class parser:
                 elif char in ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
                               "s", "t", "u", "v", "w", "x", "y", "z"]:
                     token_type = "id"
+                elif char == "$":
+                    token_type = "macro"
 
             if char == "\n":
                 new_line_scheduled = True
@@ -53,6 +55,12 @@ class parser:
                 if char == "]":
                     token_finished = True
                 token_data += char
+            if token_type == "macro":
+                if char in [' ', '\n']:
+                    token_finished = True
+                elif char != "$":
+                    token_data += char
+
             if token_finished:
                 self.add_token(token_type, token_data)
                 token_type = ""
@@ -87,7 +95,7 @@ def save_file(file_name: str, save_data: dict):
         json.dump(save_data, f)
 
 print("=======================")
-print("    The Gale Effect")
+print("\n    The Gale Effect")
 print("=======================")
 input("Press enter to start...")
 
@@ -97,7 +105,6 @@ user_in = prompt("Load from save? [y/n] ", ["y", "n"])
 if user_in == "y":
     pass
 
-story = ""
 with open("The Gale Effect/Data/Test Story.story", "r") as f:
     x = parser()
     x.parse()
@@ -107,42 +114,65 @@ game_finished = False
 current_statement = ""
 current_args = []
 
-condition = False
-
 scope = []
+scope_args = []
 
-while not game_finished:
-    for i in len(story) - 1:
-        token = story[i]
-        scope_index = len(scope) - 1
-        value = ""
-        split_token = token.split(":", 1)
-        type = split_token[0]
+macros = {}
 
-        if scope_index > 0:
+for i in range(len(story) - 1):
+    token = story[i]
+    scope_index = len(scope) - 1
 
-        if len(split_token) > 1:
-            value = split_token[1]
-        if type == "id":
-            if current_statement == "":
-                current_statement = value
-        elif type == "string":
-            current_args.append(value.replace("\"", ""))
-        elif type == "array":
-            current_args.append(eval(value))
-        elif type == "endline":
-            if current_statement == "text":
+    value = ""
+    split_token = token.split(":", 1)
+    type = split_token[0]
+    if len(split_token) > 1:
+        value = split_token[1]
+
+    if type == "id":
+        if current_statement == "":
+            current_statement = value
+        else:
+            current_args.append(value)
+    elif type == "macro":
+        if value in macros:
+            current_args.append(macros[value])
+    elif type == "string":
+        current_args.append(value.replace("\"", ""))
+    elif type == "array":
+        current_args.append(eval(value))
+
+    # end-line finalizes the statement purpose
+    elif type == "endline":
+        is_execute = True
+        if len(scope) > 0:
+            if not scope_args[scope_index]:
+                is_execute = False
+
+        if is_execute:
+            if current_statement == "set":
+                macros[current_args[0]] = current_args[1]
+            elif current_statement == "text":
                 print(current_args[0])
+            elif current_statement == "texts":
+                for item in current_args:
+                    print(item)
             elif current_statement == "prompt":
                 user_in = prompt(current_args[0], current_args[1])
-            elif current_statement == "switch":
-                scope.append("s")
-            elif current_statement == "case":
-                if current_args[0] == user_in:
-                    scope.append("c")
-            elif current_statement == "end":
-                scope_out = scope[scope_index]
-                scope.pop(scope_index)
+            elif current_statement == "exit":
+                sys.exit(1)
+        if current_statement == "switch":
+            scope.append("s")
+            scope_args.append("switch")
+        if current_statement == "case":
+            scope.append("c")
+            if current_args[0] == user_in:
+                scope_args.append(True)
+            else:
+                scope_args.append(False)
+        elif current_statement == "end":
+            scope_args.pop()
+            scope.pop(scope_index)
 
-            current_statement = ""
-            current_args = []
+        current_statement = ""
+        current_args = []
