@@ -1,0 +1,36 @@
+{
+  "story":{
+    "text":["12:35 - Spanish",
+    "You kinda need to go to the bathroom."],
+    "prompt":{"Text":"Input>","Keywords":["bathroom"]},
+    "branch":{
+      "bathroom":{
+        "text":["You ask if you can go to the bathroom.",
+        "The teacher looks suspicious but allows it.",
+        "It's recent policy.",
+        "[prompt]",
+        "You're now in the bathroom.",
+        "You feel a shit coming on"],
+        "prompt":{"Text":"Input>","Keywords":["shit"]},
+        "branch":{
+          "shit":{
+            "text":["You're about to take a shit when you notice an ominous figure.",
+            "'I wouldn't recommend that...'",
+            "[prompt]",
+            "'Big Shit controls the toilets.'",
+            "'You don't wanna give in to Big Shit, do you?'",
+            "[prompt]",
+            "The figure finished off with a few words:",
+            "'When Big Shit Shits... Shit Gets Big...'"],
+            "exit":1
+          }
+        }
+      },
+      "die":{
+        "text":["You Die",
+        "[prompt]"],
+        "exit":1
+      }
+    }
+  }
+}

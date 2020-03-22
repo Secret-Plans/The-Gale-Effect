@@ -1,0 +1,10 @@
+{
+  "story":{
+    "text":["Hey This is a Test"],
+    "prompt":{"Text":"Input>", "Keywords":["test"]},
+    "branch":{
+      "text":["We're in a nested scope now"]
+    },
+    "text":["Cool back to the old scope"]
+  }
+}
